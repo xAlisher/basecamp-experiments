@@ -1,6 +1,6 @@
 # Basecamp OS: a desktop layout for Basecamp
 
-**Status:** Prototype spec · 2026-10-16 · branch `basecamp-os-theme` (on top of `theming-v2`)
+**Status:** Prototype implemented · 2026-10-16 · branch `basecamp-os-theme` (on top of `theming-v2`)
 **Audience:** Basecamp shell developers, design review
 
 ## TL;DR
@@ -45,6 +45,17 @@
 
 - **Full screen** when the layout is `desktop`. F11 toggles full screen.
 - **Wallpaper** fills the screen (cover). Nothing else is drawn on the desktop in the prototype.
+- **Status bar** (30 px, top, `backgroundSecondary`): the λ and **Logos Basecamp** on the left; a
+  **Search · Ctrl K** hint (opens Spotlight) and the clock on the right.
+
+### 2.1 Spotlight
+
+- **Ctrl+K** (or the status bar hint) opens Spotlight over a dimmed desktop: the workspace welcome
+  page's search in a floating panel, search field focused, **Recently Closed** below.
+- Typing shows the same results and filters as the workspace search. Opening a result opens or raises
+  its window. **Esc** or a click outside closes it.
+- On the desktop the shell owns Ctrl+K: the hidden views' own Ctrl+K shortcuts are disabled or lose
+  to it.
 
 ## 3. Dock
 
@@ -65,12 +76,13 @@
 - **Title bar** (36 px, `backgroundSecondary`): app icon and name on the left; **minimise**,
   **maximise** and **close** circle buttons on the right (`surface`, hover `accentOrange`; close hovers
   `error`).
-- **Move:** drag the title bar. **Resize:** grip in the bottom-right corner. **Maximise:** double-click
-  the title bar or the button; fills the desktop above the dock.
+- **Move:** drag the title bar. **Resize:** from any edge or corner (a 4 px frame). **Maximise:**
+  double-click the title bar or the button; fills the desktop between the status bar and the dock.
 - **Minimise** hides the window; the dock restores it.
 - **Close:** an app window unloads its module (same as closing a tab today); a system app window just
   closes.
-- **New windows** open at about 70 % of the screen, centred, each next one offset by 32 px.
+- **New windows** open at about 70 % of the desktop (at most 1280 × 860), centred, each next one
+  offset by 32 px.
 - Active window: `borderStrong` outline; others `border`.
 
 ## 5. System apps
@@ -87,9 +99,9 @@ Existing navigation keeps working: anything that switches the shell section toda
 ## 6. Settings → Appearance
 
 - **Layout:** Sidebar / Desktop, with "Takes effect after a restart".
-- **Wallpaper** (desktop layout): thumbnails for the built-ins (**Basecamp** tents, **Theme
-  background** when the theme has one, **Plain**) and **Choose image…** (PNG or JPEG; copied into
-  Basecamp's data folder). Applies immediately.
+- **Wallpaper** (desktop layout): thumbnails for the built-ins (**Basecamp** tents, **Plain**) and
+  **Choose image…** (PNG or JPEG, up to 32 MB and 8192 px; copied into Basecamp's data folder).
+  Applies immediately. *Later:* the theme's `backgrounds.workspace` as a choice.
 
 ## 7. Not in the prototype
 
