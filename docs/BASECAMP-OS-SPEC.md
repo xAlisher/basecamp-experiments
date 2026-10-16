@@ -44,7 +44,13 @@
 ```
 
 - **Full screen** when the layout is `desktop`. F11 toggles full screen.
-- **Wallpaper** fills the screen (cover). Nothing else is drawn on the desktop in the prototype.
+- **Wallpaper** runs behind the whole desktop, status bar included. **Fit** (default) shows the whole
+  image and fills the spare room with a blurred, dimmed copy; **Fill** covers and crops; **Stretch**
+  stretches. For a perfect fit, match the screen (e.g. 5120 × 1440 on a 32:9 display).
+- **Frosted glass:** the status bar, title bars, window frames and the shell's own windows draw a
+  blurred copy of the wallpaper under a translucent tint. Apps keep their own backgrounds.
+- **Tiling:** a status bar toggle lays the visible windows out as equal-width columns with 10 px gaps,
+  and re-lays them out as windows open, close or hide.
 - **Status bar** (30 px, top, `backgroundSecondary`): the λ and **Logos Basecamp** on the left; a
   **Search · Ctrl K** hint (opens Spotlight) and the clock on the right.
 
