@@ -14,6 +14,17 @@
 - **Wallpaper:** the Basecamp tents photo from the node onboarding welcome page by default; changeable
   in Settings → Appearance (built-ins or your own image).
 - **Themes stay data-only.** A layout is code shipped with Basecamp; a theme only colours it.
+- **Two ways to ship it:** as a built-in **layout** of the default shell (this prototype, the easy
+  upstream path), or later as a **shell package**: a signed `ui_shell` plugin that replaces Basecamp's
+  UI shell, so the community can build their own (§7).
+
+### Terms
+
+| Term | What it changes | Code? | Ships as |
+|---|---|---|---|
+| **Theme** | How Basecamp looks: colours, gradients, wallpaper, icons, control styles | No, data | `.theme.json` / bundle |
+| **Layout** | How the default shell arranges things: `sidebar`, `desktop`, later `mobile` | Yes | Built into Basecamp |
+| **Shell** | The whole UI around the apps, replaceable | Yes | Shell package (`ui_shell`) |
 
 ## 1. Layouts
 
@@ -109,18 +120,56 @@ Existing navigation keeps working: anything that switches the shell section toda
   **Choose image…** (PNG or JPEG, up to 32 MB and 8192 px; copied into Basecamp's data folder).
   Applies immediately. *Later:* the theme's `backgrounds.workspace` as a choice.
 
-## 7. Not in the prototype
+## 7. Shell packages (future)
+
+Basecamp's UI is already a plugin: `plugins/main_ui/main_ui.so`, loaded by the app through
+`IShellView` and given a narrow `IShellHost` (about eight operations: sections, load / unload a UI
+module, display names, the observer). A build check (`nix/symbol-gate.nix`) keeps the shell from
+linking the Logos runtime, so it never touches core modules, keys or the network directly. A **shell
+package** is a package that provides another `main_ui`.
+
+### 7.1 What it can do
+
+Replace everything the default shell draws: navigation, how apps are presented (tabs, windows,
+full-screen cards), search, the welcome surface, the status area. Apps, core modules and themes
+are unchanged; a shell hosts the same app widgets and uses the same design system, so themes apply.
+
+### 7.2 What Basecamp needs first
+
+1. **Shell choice:** Settings → Appearance → **Shell** (Default, or an installed one); loaded from the
+   user's plugins folder. Today the built-in shell always wins (embedded first, then the user folder).
+2. **Package type** `ui_shell` in the manifest, installable from the Package Manager, with
+   `hostAbiVersion` declared; a mismatch falls back to the default shell instead of stopping the app
+   (today it is fatal).
+3. **Trust:** a shell sees every app's window and every keystroke, so it must carry a trusted
+   signature (`trustedSigners`). Basecamp doesn't enforce signatures yet; shells would be the first
+   place it must.
+4. **Safe mode:** if a shell fails to load or crashes at start, the next start uses the default shell;
+   a key held at launch forces it.
+5. **Shared pieces as a library:** the parts any shell needs (app hosting, intents, overlay dialogs,
+   the shortcut bridge) exposed so a shell doesn't copy the default one's internals.
+
+### 7.3 Path
+
+Ship **Basecamp OS as a layout** first (no new trust model, same mechanism the mobile layout needs).
+Open the shell package type once signing is enforced; Basecamp OS can then also be published as a
+shell package to prove it.
+
+## 8. Not in the prototype
 
 Real OS windows · multiple monitors · snapping and tiling · virtual desktops · remembering window
 positions · desktop icons or search · a theme-suggested layout · mobile (that is the third layout,
 `mobile`, from the mobile-readiness audit).
 
-## 8. Open questions
+## 9. Open questions
 
 1. **Ownership:** shell navigation belongs to the Basecamp team; is a second layout welcome upstream,
    or does it stay an experiment?
 2. **Focus:** with several apps visible, keyboard focus follows the active window. Shortcuts that
-   assumed one visible app need checking.
+   assumed one visible app need checking. Apps that run in their own process receive their own keys,
+   so Ctrl+K can't open Spotlight while one of them has focus (the status bar hint still works).
 3. **Wallpaper image:** comes from the node onboarding work (`node_welcome_BG.png`); confirm the
    source and licence before anything ships.
 4. **Windowed vs full screen:** does the desktop layout make sense in a window, or only full screen?
+5. **Shell packages:** worth opening to the community, and when? Depends on signature enforcement
+   and on the Basecamp team owning the `IShellView` / `IShellHost` contract as a public API.
