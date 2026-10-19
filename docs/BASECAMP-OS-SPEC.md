@@ -15,8 +15,8 @@
   in Settings → Appearance (built-ins or your own image).
 - **Themes stay data-only.** A layout is code shipped with Basecamp; a theme only colours it.
 - **Two ways to ship it:** as a built-in **layout** of the default shell (this prototype, the easy
-  upstream path), or later as a **shell package**: a signed `ui_shell` plugin that replaces Basecamp's
-  UI shell, so the community can build their own (§7).
+  upstream path), or later as a **shell package**: a `ui_shell` plugin, signed by its builder but not
+  verified by Logos, that replaces Basecamp's UI shell, so the community can build their own (§7).
 
 ### Terms
 
@@ -141,9 +141,13 @@ are unchanged; a shell hosts the same app widgets and uses the same design syste
 2. **Package type** `ui_shell` in the manifest, installable from the Package Manager, with
    `hostAbiVersion` declared; a mismatch falls back to the default shell instead of stopping the app
    (today it is fatal).
-3. **Trust:** a shell sees every app's window and every keystroke, so it must carry a trusted
-   signature (`trustedSigners`). Basecamp doesn't enforce signatures yet; shells would be the first
-   place it must.
+3. **Signed, not verified by Logos:** builders distribute a shell like an app, as a signed LGX
+   module. The signature says who built it and that the package wasn't altered; it does not mean
+   Logos reviewed it, just as Logos doesn't review third-party apps. Users decide which builders to
+   trust and are responsible for the shells they install. A shell sees every app's window and every
+   keystroke, so Basecamp shows the signer and a clear warning before a shell is installed or turned
+   on, and refuses an unsigned or altered shell package. Basecamp doesn't check signatures yet;
+   shells would be the first place it must.
 4. **Safe mode:** if a shell fails to load or crashes at start, the next start uses the default shell;
    a key held at launch forces it.
 5. **Shared pieces as a library:** the parts any shell needs (app hosting, intents, overlay dialogs,
@@ -152,7 +156,7 @@ are unchanged; a shell hosts the same app widgets and uses the same design syste
 ### 7.3 Path
 
 Ship **Basecamp OS as a layout** first (no new trust model, same mechanism the mobile layout needs).
-Open the shell package type once signing is enforced; Basecamp OS can then also be published as a
+Open the shell package type once Basecamp checks signatures; Basecamp OS can then also be published as a
 shell package to prove it.
 
 ## 8. Not in the prototype
@@ -171,5 +175,5 @@ positions · desktop icons or search · a theme-suggested layout · mobile (that
 3. **Wallpaper image:** comes from the node onboarding work (`node_welcome_BG.png`); confirm the
    source and licence before anything ships.
 4. **Windowed vs full screen:** does the desktop layout make sense in a window, or only full screen?
-5. **Shell packages:** worth opening to the community, and when? Depends on signature enforcement
+5. **Shell packages:** worth opening to the community, and when? Depends on Basecamp checking signatures
    and on the Basecamp team owning the `IShellView` / `IShellHost` contract as a public API.
