@@ -14,6 +14,10 @@ rounding, font family), applied live, picked or uploaded in **Settings → Appea
 >
 > **Basecamp OS** (desktop layout: dock, windows, glass, tiling, Spotlight): see the
 > [`basecamp-os-theme` branch](https://github.com/xAlisher/basecamp-theming/tree/basecamp-os-theme).
+>
+> **Try it without building:** the latest test build (themes, density, Desktop layout) is on the
+> [releases page](https://github.com/xAlisher/basecamp-theming/releases); the guide is
+> [TESTING.md](https://github.com/xAlisher/basecamp-theming/blob/basecamp-os-theme/TESTING.md).
 
 - `design-system/`: logos-design-system at `88330d0` (the revision Basecamp 0.3.2 pins) + theming commits
 - `basecamp/`: logos-basecamp `0.3.2` + theming commits
