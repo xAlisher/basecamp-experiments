@@ -115,7 +115,7 @@ Existing navigation keeps working: anything that switches the shell section toda
 
 ## 6. Settings → Appearance
 
-- **Layout:** Sidebar / Desktop, with "Takes effect after a restart".
+- **Layout:** Window (default) / Desktop, with "Takes effect after a restart".
 - **Wallpaper** (desktop layout): thumbnails for the built-ins (**Basecamp** tents, **Plain**) and
   **Choose image…** (PNG or JPEG, up to 32 MB and 8192 px; copied into Basecamp's data folder).
   Applies immediately. *Later:* the theme's `backgrounds.workspace` as a choice.
