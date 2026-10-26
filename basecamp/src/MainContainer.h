@@ -87,6 +87,12 @@ private slots:
     void showActivitySidebar();
     void toggleActivitySidebar();
     void homeScrimClicked(int x, int y);
+    // The overlay panel's side edges (HomeOverlay.qml): a drag of the right
+    // (or left) edge to `x` resizes it, centred; the release keeps the width; a double-click
+    // toggles the default and the widest. Kept in kHomeWidthKey.
+    void homeEdgeDragged(int x, bool rightEdge);
+    void homeEdgeReleased();
+    void homeEdgeDoubleClicked();
     // Desktop layout: home asked for an app or a role; it comes up in its
     // window and the overlay closes.
     void desktopLaunchFromHome(const QString& name);
@@ -141,6 +147,7 @@ private:
     QQuickWidget* m_dockWidget = nullptr;
     QQuickWidget* m_homeScrim = nullptr;         // HomeOverlay.qml, under home's view
     bool m_homeSidebar = false;                  // it is shown as the Activity sidebar
+    int m_homeWidth = 0;                         // the overlay's chosen width, 0 = default
     DesktopStatusBar* m_statusBar = nullptr;
     DesktopRoot* m_desktopRoot = nullptr;
     bool m_wentFullScreen = false;

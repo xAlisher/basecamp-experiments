@@ -11,6 +11,9 @@ import Logos.Controls
 // A click outside the panel asks to close; Esc and Ctrl+K are the shell's.
 // As the Activity sidebar (basecamp-experiments#44) the panel is a column on
 // the right edge instead, square, with a lighter dim beside it.
+// The panel's side edges are handles: dragging either resizes it, centred;
+// a double-click toggles the default and the widest (the shell clamps and
+// keeps the width). The sidebar has none.
 Item {
     id: root
 
@@ -26,6 +29,16 @@ Item {
     // closes it, or switches to the sidebar when it lands on the top bar's
     // Activity button (the dim covers the bar).
     signal outsideClicked(int x, int y)
+    // An edge handle (the right one, or the left) dragged so the edge would
+    // be at `x` (this view's coordinates), let go, or double-clicked.
+    signal edgeDragged(int x, bool rightEdge)
+    signal edgeReleased()
+    signal edgeDoubleClicked()
+
+    // Hit area of each edge handle: half outside the panel, half over its
+    // inset (the home view starts 8 px in), touch-friendly like the split
+    // divider.
+    readonly property int edgeHit: 16
 
     Rectangle {
         anchors.fill: parent
@@ -82,6 +95,50 @@ Item {
                 text: qsTr("Basecamp's Home app isn't installed, and no other installed app is set as Home. Choose one in Settings, Default apps, or reinstall Basecamp. Your open apps are in the dock.")
                 font.pixelSize: 14
                 color: Theme.palette.textSecondary
+            }
+        }
+    }
+
+    // The side edges' handles (left, right). Above the panel, so its
+    // click-swallowing MouseArea doesn't take them.
+    Repeater {
+        model: root.sidebar || root.noHome ? 0 : 2
+        delegate: MouseArea {
+            id: edge
+            required property int index
+            readonly property bool isRight: index === 1
+            objectName: isRight ? "homeOverlay.edgeRight" : "homeOverlay.edgeLeft"
+            x: (isRight ? root.panelX + root.panelWidth : root.panelX) - width / 2
+            y: root.panelY + Theme.spacing.radiusXlarge
+            width: root.edgeHit
+            height: Math.max(0, root.panelHeight - 2 * Theme.spacing.radiusXlarge)
+            hoverEnabled: true
+            preventStealing: true
+            cursorShape: Qt.SizeHorCursor
+            // Pointer to edge, so the edge doesn't jump to the pointer.
+            property real grabOffset: 0
+            onPressed: mouse => {
+                const p = mapToItem(root, mouse.x, mouse.y)
+                grabOffset = (isRight ? root.panelX + root.panelWidth : root.panelX) - p.x
+            }
+            onPositionChanged: mouse => {
+                if (!pressed)
+                    return
+                const p = mapToItem(root, mouse.x, mouse.y)
+                root.edgeDragged(Math.round(p.x + grabOffset), isRight)
+            }
+            onReleased: root.edgeReleased()
+            onDoubleClicked: root.edgeDoubleClicked()
+
+            // A grip, shown on hover and while dragging.
+            Rectangle {
+                anchors.centerIn: parent
+                width: 4
+                height: 48
+                radius: 2
+                color: Theme.palette.accentOrange
+                opacity: edge.containsMouse || edge.pressed ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 120 } }
             }
         }
     }

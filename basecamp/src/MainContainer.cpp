@@ -55,6 +55,8 @@ constexpr int kHomePillDockHeight = 44 + 2 * 8;
 // Desktop layout: the dock's panel (72) + 12 from the edge + a little air.
 // Maximised windows and the Basecamp overlay's panel stop above it.
 constexpr int kDockReserve = 92;
+// The Basecamp overlay's chosen panel width, px (HomeOverlayGeometry clamps it).
+constexpr const char* kHomeWidthKey = "BasecampShell/homeOverlayWidth";
 
 // The shell's own entry points for roles ("sys:packages" in a menu or a saved
 // tab) and the role each opens (ADR-067). Empty: not a role.
@@ -864,9 +866,14 @@ void MainContainer::setupDesktopUi()
         QUrl(QStringLiteral("qrc:/qt/qml/Basecamp/Shell/Basecamp/Shell/HomeOverlay.qml")),
         [this](QObject* root) {
             connect(root, SIGNAL(outsideClicked(int,int)), this, SLOT(homeScrimClicked(int,int)));
+            connect(root, SIGNAL(edgeDragged(int,bool)), this, SLOT(homeEdgeDragged(int,bool)));
+            connect(root, SIGNAL(edgeReleased()), this, SLOT(homeEdgeReleased()));
+            connect(root, SIGNAL(edgeDoubleClicked()), this, SLOT(homeEdgeDoubleClicked()));
             positionHomeOverlay();
         });
     m_homeScrim->hide();
+    // The width the user last dragged the panel to (px; clamped on use).
+    m_homeWidth = std::max(0, QSettings().value(QLatin1String(kHomeWidthKey), 0).toInt());
     // Home searches with its own field here, never the shell's bar.
     QMetaObject::invokeMethod(m_host->backendObject(), "setHomeQuery",
                               Q_ARG(QString, QString()), Q_ARG(bool, false));
@@ -1121,9 +1128,9 @@ void MainContainer::positionHomeOverlay()
     const int dock = m_dockWidget && m_dockWidget->isVisible()
         ? std::max(kDockReserve, height() - m_dockWidget->y()) : kDockReserve;
     const QRect panel = m_homeSidebar ? HomeOverlayGeometry::sidebar(size(), top)
-                                      : HomeOverlayGeometry::panel(size(), top, dock);
+                                      : HomeOverlayGeometry::panel(size(), top, dock, m_homeWidth);
     const QRect content = m_homeSidebar ? HomeOverlayGeometry::sidebarContent(size(), top)
-                                        : HomeOverlayGeometry::content(size(), top, dock);
+                                        : HomeOverlayGeometry::content(size(), top, dock, m_homeWidth);
     // The sidebar's dim leaves the top bar alone, so its Activity button
     // (and Search) stay live while it is open.
     const QRect scrim = m_homeSidebar ? QRect(0, top, width(), std::max(0, height() - top)) : rect();
@@ -1156,6 +1163,39 @@ void MainContainer::positionHomeOverlay()
         m_dockWidget->raise();
     if (open && m_overlayWidget && m_overlayWidget->isVisible())
         m_overlayWidget->raise();
+}
+
+// The overlay panel's edges (HomeOverlay.qml). The stored width is the one
+// chosen, kept even when a smaller window clamps it, so it comes back when
+// there is room again. The home view follows live, so its widget grid
+// gains or loses columns as the edge moves.
+void MainContainer::homeEdgeDragged(int x, bool rightEdge)
+{
+    if (!homeOverlayOpen() || m_homeSidebar)
+        return;
+    const int w = HomeOverlayGeometry::widthForEdgeAt(size(), x, rightEdge);
+    if (w == HomeOverlayGeometry::panelWidth(size(), m_homeWidth) && m_homeWidth > 0)
+        return;
+    m_homeWidth = w;
+    positionHomeOverlay();
+}
+
+void MainContainer::homeEdgeReleased()
+{
+    if (m_homeWidth > 0)
+        QSettings().setValue(QLatin1String(kHomeWidthKey), m_homeWidth);
+}
+
+void MainContainer::homeEdgeDoubleClicked()
+{
+    if (!homeOverlayOpen() || m_homeSidebar)
+        return;
+    m_homeWidth = HomeOverlayGeometry::toggledWidth(size(), m_homeWidth);
+    if (m_homeWidth > 0)
+        QSettings().setValue(QLatin1String(kHomeWidthKey), m_homeWidth);
+    else
+        QSettings().remove(QLatin1String(kHomeWidthKey));
+    positionHomeOverlay();
 }
 
 void MainContainer::showHomeOverlay()
