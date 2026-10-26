@@ -7,7 +7,7 @@ Basecamp Legacy's desktop layout had its own Spotlight page for Ctrl+K, hardcode
 
 ## Decision
 - **The home role's app is hosted by the desktop layout,** outside any window, reached only through its role-gated `shell` object. One instance serves two surfaces, never both at once:
-  - **Overlay:** Ctrl+K, the bar's Search button and the dock's Basecamp icon toggle it. It is centred (840 to 1000 px wide) and ends a gap above the dock. Esc or a click outside closes it. It replaces Spotlight.
+  - **Overlay:** Ctrl+K, the bar's Search button and the dock's Basecamp icon toggle it. It is centred (840 to 1000 px wide by default; the user can drag its side edges wider, see BASECAMP-OS-SPEC 2.1) and ends a gap above the dock. Esc or a click outside closes it. It replaces Spotlight.
   - **Activity sidebar:** a button next to the clock opens home in a feed-only mode in a 400 px column on the right edge: search, pills and cards.
 - **Opening an app** from either surface (Recent apps, an Apps row, a card's open action, or the dock) opens or raises its window and closes the surface.
 - **The dock:** Basecamp (λ, a smaller logo) pinned first, then open apps only. No hardcoded links. Apps that only fill a background role (search) never appear in the dock.

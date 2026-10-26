@@ -65,14 +65,20 @@
 - **Status bar** (30 px, top, `backgroundSecondary`): the λ and **Logos Basecamp** on the left; a
   **Search · Ctrl K** hint (opens Spotlight) and the clock on the right.
 
-### 2.1 Spotlight
+### 2.1 Basecamp overlay (replaced Spotlight, ADR-079, #43)
 
-- **Ctrl+K** (or the status bar hint) opens Spotlight over a dimmed desktop: the workspace welcome
-  page's search in a floating panel, search field focused, **Recently Closed** below.
-- Typing shows the same results and filters as the workspace search. Opening a result opens or raises
-  its window. **Esc** or a click outside closes it.
-- On the desktop the shell owns Ctrl+K: the hidden views' own Ctrl+K shortcuts are disabled or lose
-  to it.
+- **Ctrl+K**, the status bar's Search and the dock's Basecamp icon toggle the home app in a panel
+  over a dimmed desktop, centred, from under the status bar to a gap above the dock. **Esc** or a
+  click outside closes it. On the desktop the shell owns Ctrl+K.
+- **Width:** by default 70 % of the window, kept between 840 and 1000 px. The user can drag either
+  side edge to resize it; it stays centred, between 840 px (or the window, if smaller) and the
+  window less 24 px each side. The edges show a horizontal resize cursor and a grip on hover; the
+  hit area is 16 px. **Double-click** an edge toggles the default and the widest.
+- The chosen width is remembered across restarts (setting `BasecampShell/homeOverlayWidth`, px) and
+  clamped to the window on use: a smaller window narrows the panel, a bigger one brings the chosen
+  width back. Toggling back to the default forgets it.
+- Home's view follows the panel live, so its widget grid gains a column per 400 px as it widens
+  (HOME-GRID-SPEC). The Activity sidebar stays 400 px and is not resizable.
 
 ## 3. Dock
 
