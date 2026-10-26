@@ -821,6 +821,13 @@ void MainContainer::setupDesktopUi()
         "glass", new GlassInfo(m_desktopRoot, m_contentWidget, m_contentWidget));
     connect(m_desktop, &DesktopArea::windowsChanged, this, &MainContainer::updateDock);
     connect(m_desktop, &DesktopArea::closeRequested, this, &MainContainer::onDesktopCloseRequested);
+    // Split view: a remembered partner that isn't open yet.
+    connect(m_desktop, &DesktopArea::launchRequested, this, [this](const QString& key) {
+        if (key.startsWith(QStringLiteral("sys:")))
+            openSystemApp(key);
+        else
+            launchFromDock(key);
+    });
 
     // The dock floats over the desktop, like the overlay: a translucent
     // QQuickWidget sized to its content and kept centred at the bottom.

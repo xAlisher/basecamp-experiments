@@ -10,6 +10,8 @@
 
 class WindowFrame;
 class WindowTitleBar;
+class SplitPicker;
+class SplitDivider;
 
 // The desktop's backdrop: the wallpaper, composed once per size and fit, and
 // a blurred copy that frosted surfaces (status bar, title bars, window frames)
@@ -114,6 +116,7 @@ public:
               QWidget* content, QWidget* parent = nullptr);
 
     QString key() const { return m_key; }
+    QString iconPath() const { return m_iconPath; }
     QWidget* content() const { return m_content; }
 
     bool isMaximizedOnDesktop() const { return m_maximized; }
@@ -130,6 +133,7 @@ public:
 signals:
     void closeRequested(const QString& key);
     void minimizeRequested(const QString& key);
+    void splitRequested(const QString& key);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -138,6 +142,7 @@ protected:
 
 private:
     QString m_key;
+    QString m_iconPath;
     QPointer<QWidget> m_content;
     WindowFrame* m_frame = nullptr;
     WindowTitleBar* m_titleBar = nullptr;
@@ -177,9 +182,27 @@ public:
 
     QString activeKey() const;
 
+    // Split view: two windows side by side (one above the other on a portrait
+    // screen) with a draggable divider; the other windows stay behind them.
+    // Pairs are remembered, most used first, and offered when a split starts.
+    bool splitActive() const { return m_splitOn; }
+    bool inSplit(const AppWindow* w) const;
+    // `w` takes the first half; the other half offers partners (or takes the
+    // only other window right away).
+    void beginSplit(AppWindow* w);
+    // Both windows must be open. ratio < 0: the remembered one for this pair.
+    void setSplit(const QString& first, const QString& second, double ratio = -1);
+    void exitSplit();
+    // A divider position (share of the first side) kept within 0.2..0.8 and
+    // pulled onto 1/3, 1/2 or 2/3 when close.
+    static double snapSplitRatio(double r);
+
 signals:
     void windowsChanged();
     void closeRequested(const QString& key);
+    // A remembered partner that isn't open: MainContainer launches it, and the
+    // split completes when its window arrives.
+    void launchRequested(const QString& key);
 
 signals:
     void tilingChanged(bool on);
@@ -188,9 +211,43 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    friend class SplitPicker;
+    friend class SplitDivider;
+    friend class DesktopAreaSplitTest;   // tests/desktop_split_test.cpp
+
     void onActivated(QMdiSubWindow* w);
     void retileSoon();
     void retile();
+
+    struct SplitPair {
+        QString a, b, aTitle, bTitle, aIcon, bIcon;
+        double ratio = 0.5;
+        int count = 0;
+        qint64 last = 0;   // ms since epoch
+        // The use count, halving every week since `last`; `now` < 0: the clock.
+        double score(qint64 now = -1) const;
+    };
+    void layoutSplit();
+    bool splitVertical() const;
+    QRect splitRect(int side) const;   // 0: first, 1: second
+    QRect dividerRect() const;
+    void choosePartner(const QString& key);
+    // Splits in place of the side the user is working in (opening another
+    // app while split).
+    void replaceActiveSide(const QString& key);
+    // Saves the current pair (count it: a new split, not just a new ratio).
+    void recordSplit(bool count);
+    QList<SplitPair> loadPairs() const;
+    void savePairs(QList<SplitPair> pairs) const;
+    QList<SplitPair> partnersOf(const QString& key) const;   // as a=key, b=partner
+    double rememberedRatio(const QString& first, const QString& second) const;
+
+    bool m_splitOn = false;
+    QString m_splitA, m_splitB;
+    double m_splitRatio = 0.5;
+    QString m_pendingA, m_pendingB;   // partner launched, waiting for its window
+    SplitPicker* m_picker = nullptr;
+    SplitDivider* m_divider = nullptr;
 
     QStringList m_order;   // window keys in opening order, for tiling
     bool m_tiling = false;
